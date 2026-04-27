@@ -1,0 +1,195 @@
+.home-container {
+  width: 100%;
+}
+
+/* --- HERO BANNER --- */
+.hero-banner {
+  position: relative;
+  background: linear-gradient(135deg, #e6f7ff 0%, #bae0ff 100%);
+  padding: 100px 20px;
+  text-align: center;
+  margin-bottom: 50px;
+  overflow: hidden;
+}
+
+.hero-shape { position: absolute; border-radius: 50%; }
+.shape-1 { top: -50px; left: -50px; width: 250px; height: 250px; background: rgba(255,255,255,0.4); }
+.shape-2 { bottom: -80px; right: 10%; width: 300px; height: 300px; background: rgba(24, 144, 255, 0.1); }
+.shape-3 { top: 20%; right: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.3); }
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-banner .ant-typography.hero-title {
+  font-size: 48px;
+  color: #003a8c;
+  margin-bottom: 20px;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: #595959;
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+
+.hero-tags {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.hero-tag {
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-icon { font-size: 18px; }
+.tag-white { background: #ffffff; color: #1890ff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.tag-gradient { background: linear-gradient(90deg, #ff7a45, #ff4d4f); color: #ffffff; box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3); }
+
+/* KHẮC PHỤC LỖI NÚT HERO BỊ MÓP */
+.hero-content .ant-btn.hero-btn {
+  height: 54px !important;
+  min-width: 210px;
+  padding: 0 40px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(24,144,255,0.4);
+}
+
+/* --- DỊCH VỤ CỦA CHÚNG TÔI --- */
+.home-main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section-header { text-align: center; margin-bottom: 60px; }
+.section-divider { width: 60px; height: 4px; background: #1890ff; margin: 0 auto; }
+
+/* FIX CHIỀU CAO CỘT VÀ BADGE ĐỂ CARD LUÔN BẰNG NHAU */
+.service-col {
+  height: auto;
+}
+
+/* Ép wrapper của thẻ Ribbon bung đủ 100% chiều cao của cột */
+.service-col .ant-badge {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Wrapper cho thẻ không có Ribbon */
+.full-height-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* THIẾT KẾ CARD SẢN PHẨM */
+.service-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden; 
+}
+
+/* Ép thẻ body của antd mất lề mặc định để dính sát lề như Cover */
+.service-card > .ant-card-body {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Đẩy phần thông tin giãn ra, ép nút bấm xuống đáy */
+}
+
+.service-cover {
+  width: 100%;
+  height: 180px;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.service-icon-wrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #e6f7ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #1890ff;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+.service-icon-wrapper .anticon {
+  font-size: 46px;
+}
+
+.service-info {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.service-name { margin-bottom: 8px; }
+.service-price { font-size: 16px; display: block; margin-bottom: 16px; color: #ff4d4f; font-weight: 500; }
+.service-desc { margin-bottom: 16px; min-height: 44px; color: #595959; }
+.btn-select-service { margin-top: auto; border-radius: 6px; }
+
+/* --- VÌ SAO CHỌN CHÚNG TÔI --- */
+.why-choose-us {
+  margin-top: 80px; 
+  margin-bottom: 80px; 
+  padding: 60px 40px;
+  border-radius: 16px; 
+  background: #ffffff;
+  background-image: radial-gradient(#e6f7ff 2px, transparent 2px);
+  background-size: 30px 30px; 
+  border: 1px solid #e0e0e0;
+}
+
+.why-choose-us .section-header { margin-bottom: 50px; }
+.why-title { background: #fff; display: inline-block; padding: 0 20px; }
+.why-divider { margin-top: 10px; }
+
+.feature-card {
+  background: #fff; 
+  padding: 30px 20px; 
+  border-radius: 12px;
+  height: 100%; 
+  border: 1px solid #e0e0e0; 
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+
+.feature-icon { font-size: 48px; margin-bottom: 20px; }
+.icon-safe { color: #52c41a; }
+.icon-fast { color: #1890ff; }
+.icon-support { color: #722ed1; }

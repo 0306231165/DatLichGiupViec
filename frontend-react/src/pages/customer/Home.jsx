@@ -70,7 +70,7 @@ const Home = () => {
         <Row gutter={[24, 24]} justify="center" align="stretch">
           {services.map(service => {
             const cardContent = (
-              <Card hoverable className="service-card">
+              <Card className="service-card">
                 {/* Đưa cover vào thẳng body để không bị Antd ghi đè class ẩn */}
                 <div className="service-cover">
                   <div className="service-icon-wrapper">
@@ -99,15 +99,18 @@ const Home = () => {
 
             return (
               <Col xs={24} sm={12} md={6} key={service.id} className="service-col">
-                {service.isHot ? (
-                  <Badge.Ribbon text="Phổ biến" color="volcano" className="full-height-ribbon">
-                    {cardContent}
-                  </Badge.Ribbon>
-                ) : (
-                  <div className="full-height-wrapper">
-                    {cardContent}
-                  </div>
-                )}
+                {/* Bọc thêm thẻ div này để bắt sự kiện hover cho toàn bộ khối */}
+                <div className="service-item-wrapper">
+                  {service.isHot ? (
+                    <Badge.Ribbon text="Phổ biến" color="volcano" className="full-height-ribbon">
+                      {cardContent}
+                    </Badge.Ribbon>
+                  ) : (
+                    <div className="full-height-wrapper">
+                      {cardContent}
+                    </div>
+                  )}
+                </div>
               </Col>
             );
           })}

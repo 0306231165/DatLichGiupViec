@@ -27,8 +27,10 @@
 }
 
 .header-menu {
+  font-weight: 500;
   flex: 1;
   border-bottom: none;
+  /* justify-content: center; Đẩy menu ra giữa */
   font-size: 16px;
   line-height: 64px; /* Khớp với chiều cao Header antd */
 }
@@ -66,6 +68,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: fit-content;
 }
 
 .footer-links a {
@@ -83,3 +86,58 @@
   padding-top: 20px;
   color: rgba(255, 255, 255, 0.45);
 }
+
+/* --- HEADER SEARCH & ACTIONS --- */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Thanh tìm kiếm */
+.header-search-bar {
+  width: 260px; /* Độ rộng vừa phải */
+  transition: all 0.3s;
+}
+
+.header-search-bar:hover, .header-search-bar:focus {
+  width: 260px; /* Giãn nhẹ khi tương tác */
+}
+
+/* Nút Đăng nhập kiểu mới (Nổi bật nhưng không lấn át nút Booking) */
+.btn-login-new {
+  border-color: #1890ff;
+  color: #1890ff;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.btn-login-new:hover {
+  background: #e6f7ff;
+  border-color: #40a9ff;
+  color: #40a9ff;
+}
+
+/* Nút Đặt lịch ngay - Spotlight */
+.btn-header-booking {
+  font-weight: 600;
+  height: 40px;
+  padding: 0 20px;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.35);
+}
+
+/* Icon mũi tên nhỏ cho menu Dịch vụ */
+.dropdown-arrow-small {
+  font-size: 10px !important; /* Nhỏ gọn */
+  margin-left: 5px;
+  color: #8c8c8c;
+  margin-top: 4px;
+}
+
+/* Chỉnh menu dịch vụ để icon và chữ thẳng hàng */
+.menu-service-title {
+  display: flex;
+  align-items: center;
+}
+
+/* Căn giữa menu text để không bị lệch khi thêm search bar */

@@ -1,0 +1,147 @@
+/* Bao bọc toàn bộ trang */
+.register-container {
+  width: 100%;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+/* --- PHẦN BANNER BÊN TRÁI (Đã đổi về màu xanh dương giống Login) --- */
+.register-banner {
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.register-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+.register-shape-1 {
+  width: 500px;
+  height: 500px;
+  top: -150px;
+  left: -100px;
+}
+.register-shape-2 {
+  width: 250px;
+  height: 250px;
+  bottom: 5%;
+  right: -50px;
+}
+
+.register-banner-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 40px;
+}
+
+.register-banner-title {
+  color: #fff !important;
+  font-size: 44px !important;
+  font-weight: 900 !important;
+  margin-bottom: 20px !important;
+  letter-spacing: -1px;
+}
+
+.register-banner-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* --- PHẦN FORM BÊN PHẢI --- */
+.register-form-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background-color: #fff;
+  position: relative; /* Gốc tọa độ cho nút floating */
+}
+
+/* Nút Floating y hệt trang Login (Màu hover xanh dương) */
+.btn-floating-back {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #595959;
+  border-color: #d9d9d9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  z-index: 10;
+}
+
+.btn-floating-back:hover {
+  color: #1890ff;
+  border-color: #1890ff;
+  background: #e6f7ff;
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+}
+
+.register-form-box {
+  width: 100%;
+  max-width: 420px;
+}
+
+.register-title {
+  margin-bottom: 8px !important;
+  font-weight: 700 !important;
+}
+
+.register-desc {
+  display: block;
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+.register-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.register-form .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.register-form .ant-input-affix-wrapper-lg {
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+/* Nút Submit đăng ký màu xanh dương */
+.btn-submit-register {
+  margin-top: 8px;
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  background-color: #1677ff;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.btn-submit-register:hover {
+  background-color: #40a9ff !important;
+}
+
+.register-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 15px;
+}
+
+/* Link Đăng nhập màu xanh dương */
+.login-link {
+  font-weight: 600;
+  color: #1890ff;
+}
+.login-link:hover {
+  color: #40a9ff;
+}

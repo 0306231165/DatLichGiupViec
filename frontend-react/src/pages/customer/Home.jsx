@@ -7,7 +7,7 @@ import {
   StarOutlined, ToolOutlined, HeartOutlined, BgColorsOutlined,
   CheckCircleOutlined, GiftOutlined
 } from '@ant-design/icons';
-import './../../css/Home.css'; 
+import './../../css/customer/Home.css'; 
 
 const { Title, Paragraph, Text } = Typography;
 

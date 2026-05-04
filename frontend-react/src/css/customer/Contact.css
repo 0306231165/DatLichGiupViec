@@ -1,0 +1,95 @@
+.contact-page-container {
+  background-color: #f0f2f5;
+  /* Ép container chiếm tối thiểu 100% chiều cao màn hình trừ đi header */
+  min-height: calc(100vh - 64px); 
+  /* Dùng padding thay vì margin để nền xám phủ kín xuống tận đáy */
+  padding-bottom: 60px; 
+}
+
+/* Banner phía trên */
+.contact-header {
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  padding: 60px 20px;
+  text-align: center;
+}
+
+/* Phần nội dung Card */
+.contact-content {
+  max-width: 1200px;
+  /* Đã xóa margin-bottom: 40px ở đây để triệt tiêu dải trắng */
+  margin: -40px auto 0 auto; 
+  padding: 0 20px;
+}
+
+.contact-card {
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Danh sách thông tin bên trái */
+.info-list {
+  margin-top: 20px;
+}
+
+.info-item {
+  margin-bottom: 24px;
+}
+
+.info-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 40px;
+  height: 40px;
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border-radius: 50%;
+  font-size: 18px;
+}
+
+/* Khung form bên phải */
+.contact-form-wrapper {
+  background-color: #fafafa;
+  padding: 30px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  height: 100%;
+}
+
+.contact-form-wrapper .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+/* --- CANH CHỈNH LẠI KHOẢNG CÁCH FORM --- */
+/* Ép khoảng cách giữa Label (tiêu đề) và Ô input gần lại */
+.contact-form-wrapper .ant-form-item-label {
+  padding-bottom: 2px !important; 
+}
+
+/* Thu hẹp nhẹ khoảng cách giữa các hàng (hàng trên, hàng dưới) để form gọn gàng hơn */
+.contact-form-wrapper .ant-form-item {
+  margin-bottom: 18px; 
+}
+/* -------------------------------------- */
+
+.btn-send-contact {
+  height: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.btn-send-contact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+}
+
+/* Bản đồ */
+.map-container {
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}

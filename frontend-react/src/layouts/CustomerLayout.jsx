@@ -6,7 +6,7 @@ import {
   HomeOutlined, 
   DownOutlined 
 } from '@ant-design/icons';
-import './../css/CustomerLayout.css';
+import './../css/customer/CustomerLayout.css';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
@@ -48,7 +48,7 @@ const CustomerLayout = () => {
           </SubMenu>
 
           <Menu.Item key="/promotions"><Link to="/promotions">Khuyến mãi</Link></Menu.Item>
-          <Menu.Item key="/partner"><Link to="/partner">Trở thành đối tác</Link></Menu.Item>
+          <Menu.Item key="/contact"><Link to="/contact">Liên hệ</Link></Menu.Item>
         </Menu>
 
         <div className="header-actions">

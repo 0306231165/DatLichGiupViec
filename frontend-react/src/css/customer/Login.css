@@ -1,0 +1,186 @@
+/* Bao bọc toàn bộ trang, reset margin */
+.login-container {
+  width: 100%;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+/* --- PHẦN BANNER BÊN TRÁI --- */
+.login-banner {
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Các hình tròn mờ trang trí cho giống trang Home */
+.login-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+.login-shape-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+}
+.login-shape-2 {
+  width: 300px;
+  height: 300px;
+  bottom: 10%;
+  right: -50px;
+}
+
+.login-banner-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 40px;
+}
+
+.login-banner-title {
+  color: #fff !important;
+  font-size: 48px !important;
+  font-weight: 900 !important;
+  margin-bottom: 20px !important;
+  letter-spacing: -1px;
+}
+
+.login-banner-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* --- PHẦN FORM BÊN PHẢI --- */
+.login-form-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background-color: #fff;
+  position: relative;
+}
+
+.login-form-box {
+  width: 100%;
+  max-width: 420px; /* Khống chế độ rộng form cho đẹp */
+}
+
+.btn-floating-back {
+  position: absolute;
+  top: 24px;
+  right: 24px; /* Đặt gọn gàng ở góc trên cùng bên phải */
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #595959;
+  border-color: #d9d9d9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Đổ bóng nhẹ cho nổi bật */
+  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  z-index: 10;
+}
+
+/* Thêm hiệu ứng nhún nhảy nhẹ khi di chuột vào (UX siêu mượt) */
+.btn-floating-back:hover {
+  color: #1890ff;
+  border-color: #1890ff;
+  background: #e6f7ff;
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+}
+
+.login-title {
+  margin-bottom: 8px !important;
+  font-weight: 700 !important;
+}
+
+.login-desc {
+  display: block;
+  margin-bottom: 30px;
+  font-size: 15px;
+}
+
+.login-form .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.login-form .ant-input-affix-wrapper-lg {
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.login-forgot {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.btn-submit-login {
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  background-color: #1677ff;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.login-divider {
+  color: #bfbfbf;
+  font-size: 14px;
+  margin: 24px 0;
+}
+
+.social-login-group {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-social {
+  height: 44px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-google {
+  color: #cf1322;
+  border-color: #ffa39e;
+}
+.btn-google:hover {
+  color: #cf1322;
+  background: #fff1f0;
+  border-color: #ff7875;
+}
+
+.btn-facebook {
+  color: #096dd9;
+  border-color: #91d5ff;
+}
+.btn-facebook:hover {
+  color: #096dd9;
+  background: #e6f7ff;
+  border-color: #69c0ff;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 15px;
+}
+
+.register-link {
+  font-weight: 600;
+  color: #1890ff;
+}

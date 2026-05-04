@@ -105,3 +105,67 @@
   font-weight: 500;
   font-style: italic;
 }
+
+.full-width {
+  width: 100%;
+}
+
+.section-label-container {
+  margin-bottom: 8px;
+}
+
+.required-star {
+  color: #ff4d4f;
+  margin-right: 4px;
+  font-size: 14px;
+  font-family: SimSun, sans-serif;
+}
+
+.text-free {
+  color: #52c41a;
+}
+
+.alert-info-mt {
+  margin-top: 10px;
+}
+
+/* --- UX cụm nút ở màn hình Đặt thành công --- */
+.success-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.success-btn {
+  min-width: 180px;
+  border-radius: 6px;
+}
+
+/* Khoảng cách cho nút Quay Lại */
+.btn-back {
+  margin-right: 12px;
+}
+
+/* --- Căn giữa icon và text của Label --- */
+.custom-label-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* Khoảng cách giữa icon và chữ */
+}
+
+.custom-label-wrapper .anticon {
+  font-size: 16px;
+  color: #595959; 
+}
+
+/* Ép dấu sao (*) của Ant Design nằm giữa trục Y so với Icon và Text */
+.ant-form-item-label > label {
+  align-items: center !important;
+}
+
+.ant-form-item-label > label::before {
+  line-height: unset !important;
+  margin-top: 2px; /* Tinh chỉnh độ cao quang học để cân bằng hoàn hảo */
+}

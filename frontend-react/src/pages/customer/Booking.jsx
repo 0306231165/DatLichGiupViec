@@ -12,9 +12,9 @@ import {
   SyncOutlined,
   InfoCircleOutlined,
   EditOutlined,
-  CheckOutlined,
   WarningOutlined,
-  UserOutlined // Đã thêm icon User
+  UserOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './../../css/customer/Booking.css';
@@ -37,7 +37,7 @@ const Booking = () => {
     paymentMethod: 'cash',
     duration: '1',
     weekDays: [],
-    staffSelection: 'auto' // Mặc định là hệ thống tự xếp
+    staffSelection: 'auto'
   });
 
   // --- LOGIC TÍNH TOÁN & PHỤ PHÍ KHẨN CẤP ---
@@ -45,12 +45,18 @@ const Booking = () => {
   let estimatedSessions = 1;
 
   if (bookingData.bookingFrequency === 'periodic') {
-    const months = parseInt(bookingData.duration) || 1;
-    if (bookingData.cycleType === 'multi-weekly') {
-      const daysPerWeek = bookingData.weekDays && bookingData.weekDays.length > 0 ? bookingData.weekDays.length : 1;
-      estimatedSessions = (months * 4) * daysPerWeek;
+    // Nếu chọn Xuyên suốt linh hoạt -> Chỉ tính bill tạm cho 1 buổi
+    if (bookingData.cycleType === 'continuous-weekly') {
+      estimatedSessions = 1;
     } else {
-      estimatedSessions = months * 4;
+      // Nếu chọn gói có tháng -> Tính như cũ
+      const months = parseInt(bookingData.duration) || 1;
+      if (bookingData.cycleType === 'multi-weekly') {
+        const daysPerWeek = bookingData.weekDays && bookingData.weekDays.length > 0 ? bookingData.weekDays.length : 1;
+        estimatedSessions = (months * 4) * daysPerWeek;
+      } else {
+        estimatedSessions = months * 4;
+      }
     }
   }
 
@@ -62,36 +68,54 @@ const Booking = () => {
     const now = dayjs();
     if (dateFieldToCheck.isSame(now, 'day')) {
       const selectedDateTime = dateFieldToCheck.hour(bookingData.time.hour()).minute(bookingData.time.minute());
-      // Nếu thời gian đặt cách hiện tại dưới 2 tiếng và lớn hơn 29 phút
       if (selectedDateTime.isBefore(now.add(2, 'hour')) && selectedDateTime.isAfter(now.add(29, 'minute'))) {
         isUrgentBooking = true;
       }
     }
   }
 
-  // Bắt logic tính phí Chọn Thợ
+  // --- LOGIC TÍNH TOÁN NHÂN VIÊN ---
   let staffFee = 0;
-  if (bookingData.staffSelection === 'favorite') {
-    // Đặt lẻ: 30k/ca. Đặt định kỳ: 50k phí sắp xếp thợ cố định cho toàn hợp đồng
-    staffFee = bookingData.bookingFrequency === 'periodic' ? 50000 : 30000;
+  // Kiểm tra gói tháng: Định kỳ nhưng KHÔNG PHẢI hàng tuần linh hoạt
+  const isMonthlyPackage = bookingData.bookingFrequency === 'periodic' && bookingData.cycleType !== 'continuous-weekly';
+  
+  // Logic "Chốt chặn": Nếu là gói tháng thì phí luôn bằng 0, ngược lại nếu chọn favorite thì mới tính 30k
+  if (!isMonthlyPackage && bookingData.staffSelection === 'favorite') {
+    staffFee = 30000; 
+  } else {
+    staffFee = 0; 
   }
 
   const subTotal = basePrice * estimatedSessions;
-  const periodicDiscount = bookingData.bookingFrequency === 'periodic' ? subTotal * 0.1 : 0;
-  const voucherDiscount = isPromoApplied ? 50000 : 0;
-  const urgentFee = isUrgentBooking ? 80000 : 0; // Đã chốt 80.000đ
   
-  // Tổng tiền = Tiền dịch vụ + Phí đặt gấp + Phí chọn thợ - Giảm giá định kỳ - Voucher
+  // Ưu đãi 10% chỉ dành cho gói tháng
+  const periodicDiscount = isMonthlyPackage ? subTotal * 0.1 : 0;
+  const voucherDiscount = isPromoApplied ? 50000 : 0;
+  const urgentFee = isUrgentBooking ? 80000 : 0; 
+  
+  // Tổng cuối cùng sẽ luôn đúng vì staffFee đã được xử lý ở trên
   const finalTotal = subTotal + urgentFee + staffFee - periodicDiscount - voucherDiscount;
 
   const handleValuesChange = (changedValues, allValues) => {
+    let updatedValues = { ...allValues };
+
     if (changedValues.cycleType || changedValues.weekDays) {
-      if (allValues.cycleType === 'multi-weekly') {
+      if (updatedValues.cycleType === 'multi-weekly') {
         form.setFieldsValue({ startDate: null });
-        allValues.startDate = null;
+        updatedValues.startDate = null;
       }
     }
-    setBookingData(prev => ({ ...prev, ...allValues }));
+
+    // Xử lý tự động ép về 'auto' nếu chọn Gói tháng
+    const isMonthlyNow = updatedValues.bookingFrequency === 'periodic' && updatedValues.cycleType !== 'continuous-weekly';
+    
+    if (isMonthlyNow && updatedValues.staffSelection !== 'auto') {
+      // Nếu là gói tháng mà state đang là 'favorite', ép về 'auto'
+      form.setFieldsValue({ staffSelection: 'auto' });
+      updatedValues.staffSelection = 'auto';
+    }
+
+    setBookingData(prev => ({ ...prev, ...updatedValues }));
   };
 
   const next = async () => {
@@ -121,7 +145,6 @@ const Booking = () => {
     }
   };
 
-  // --- HÀM KHÓA NGÀY ---
   const disabledDate = (current) => {
     if (current && current < dayjs().startOf('day')) {
       return true;
@@ -139,7 +162,6 @@ const Booking = () => {
     return day === 0 ? 'Chủ nhật' : `Thứ ${day + 1}`;
   };
 
-  // --- HÀM KIỂM TRA GIỜ (Chặn dưới 30 phút) ---
   const validateTimeRule = ({ getFieldValue }) => ({
     validator(_, value) {
       if (!value) return Promise.resolve();
@@ -152,16 +174,14 @@ const Booking = () => {
       const now = dayjs();
       if (selectedDate.isSame(now, 'day')) {
         const selectedDateTime = selectedDate.hour(value.hour()).minute(value.minute());
-        // Chỉ chặn cứng nếu đặt trước DƯỚI 30 PHÚT
         if (selectedDateTime.isBefore(now.add(30, 'minute'))) {
-          return Promise.reject(new Error('Vui lòng đặt trước ít nhất 30 phút để thợ kịp di chuyển!'));
+          return Promise.reject(new Error('Vui lòng đặt trước ít nhất 30 phút để nhân viên kịp di chuyển!'));
         }
       }
       return Promise.resolve();
     }
   });
 
-  // --- BƯỚC 1: DỊCH VỤ ---
   const Step1 = (
     <>
       <Title level={4} className="mb-4">Thông tin dịch vụ</Title>
@@ -169,7 +189,7 @@ const Booking = () => {
         <Radio.Group className="full-width">
           <Space direction="vertical" className="full-width">
             <Radio value="one-time">Dùng 1 lần linh hoạt (Đặt buổi nào tính buổi đó)</Radio>
-            <Radio value="periodic">Đặt định kỳ (Lặp lại dài hạn) - <span className="promo-text">Giảm 10%</span></Radio>
+            <Radio value="periodic">Đặt định kỳ (Lặp lại dài hạn)</Radio>
           </Space>
         </Radio.Group>
       </Form.Item>
@@ -193,27 +213,9 @@ const Booking = () => {
       </Form.Item>
 
       <Divider />
-
-      {/* CHỨC NĂNG CHỌN THỢ MỚI THÊM */}
-      <Form.Item name="staffSelection" label={<span className="custom-label-wrapper"><UserOutlined /> <Text strong>Tùy chọn nhân viên</Text></span>}>
-        <Radio.Group className="full-width">
-          <Space direction="vertical" className="full-width">
-            <Radio value="auto">
-              <Text strong>Hệ thống tự điều phối</Text> (Miễn phí) - <Text type="secondary">Nhanh chóng nhất</Text>
-            </Radio>
-            <Radio value="favorite">
-              <Text strong>{bookingData.bookingFrequency === 'periodic' ? 'Ưu tiên thợ yêu thích / Thợ quen' : 'Chọn thợ yêu thích / Thợ quen'}</Text> 
-              <span style={{ color: '#cf1322', marginLeft: 8 }}>
-                {bookingData.bookingFrequency === 'periodic' ? '+50.000đ / toàn bộ hợp đồng' : '+30.000đ / ca'}
-              </span>
-            </Radio>
-          </Space>
-        </Radio.Group>
-      </Form.Item>
     </>
   );
 
-  // --- BƯỚC 2: THỜI GIAN ---
   const Step2 = (
     <>
       <Title level={4} className="mb-4">Thời gian làm việc</Title>
@@ -224,6 +226,7 @@ const Booking = () => {
             <Radio.Group optionType="button" buttonStyle="solid">
               <Radio.Button value="single-weekly">1 buổi / Tuần</Radio.Button>
               <Radio.Button value="multi-weekly">Nhiều buổi / Tuần</Radio.Button>
+              <Radio.Button value="continuous-weekly">Hàng tuần (Linh hoạt)</Radio.Button>
             </Radio.Group>
           </Form.Item>
 
@@ -262,26 +265,28 @@ const Booking = () => {
             </Col>
           </Row>
 
-          {/* CẢNH BÁO ĐẶT GẤP (Đã chỉnh số động) */}
           {isUrgentBooking && (
-             <div style={{ marginBottom: 16, color: '#cf1322', padding: '10px 12px', background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: '6px' }}>
-               <WarningOutlined /> <Text strong type="danger">Lưu ý:</Text> Bạn đang yêu cầu dịch vụ gấp (dưới 2 tiếng). Hệ thống sẽ tự động cộng thêm <Text strong>{urgentFee.toLocaleString()}đ phụ phí</Text> cho ca làm việc đầu tiên để điều phối thợ nhanh nhất.
-             </div>
+            <div style={{ marginBottom: 16, color: '#cf1322', padding: '10px 12px', background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: '6px' }}>
+              <WarningOutlined /> <Text strong type="danger">Lưu ý:</Text> Bạn đang yêu cầu dịch vụ gấp (dưới 2 tiếng). Hệ thống sẽ tự động cộng thêm <Text strong>{urgentFee.toLocaleString()}đ phụ phí</Text> cho ca làm việc đầu tiên để điều phối nhân viên nhanh nhất.
+            </div>
           )}
 
-          {bookingData.cycleType === 'single-weekly' && bookingData.startDate && (
+          {(bookingData.cycleType === 'single-weekly' || bookingData.cycleType === 'continuous-weekly') && bookingData.startDate && (
              <div style={{ marginBottom: 16, color: '#1677ff', fontStyle: 'italic', padding: '8px 12px', background: '#e6f4ff', borderRadius: '6px' }}>
                <InfoCircleOutlined /> Lịch sẽ tự động lặp lại vào <b>{getDayName(bookingData.startDate)}</b> mỗi tuần.
              </div>
           )}
           
-          <Form.Item name="duration" label={<span className="custom-label-wrapper"><CalendarOutlined /> <Text strong>Thời gian duy trì hợp đồng</Text></span>}>
-            <Select size="large">
-              <Option value="1">Duy trì trong 1 tháng (Khuyến nghị)</Option>
-              <Option value="3">Duy trì trong 3 tháng</Option>
-              <Option value="6">Duy trì trong 6 tháng</Option>
-            </Select>
-          </Form.Item>
+          {/* Ẩn mục chọn tháng nếu khách chọn Hàng tuần linh hoạt */}
+          {bookingData.cycleType !== 'continuous-weekly' && (
+            <Form.Item name="duration" label={<span className="custom-label-wrapper"><CalendarOutlined /> <Text strong>Thời gian duy trì hợp đồng</Text></span>}>
+              <Select size="large">
+                <Option value="1">Duy trì trong 1 tháng (Khuyến nghị)</Option>
+                <Option value="3">Duy trì trong 3 tháng</Option>
+                <Option value="6">Duy trì trong 6 tháng</Option>
+              </Select>
+            </Form.Item>
+          )}
         </div>
       ) : (
         <Row gutter={16}>
@@ -301,20 +306,20 @@ const Booking = () => {
               </Form.Item>
           </Col>
           
-          {/* CẢNH BÁO ĐẶT GẤP CHO ĐẶT LẺ (Đã chỉnh số động) */}
           {isUrgentBooking && (
-             <Col span={24}>
-               <div style={{ marginBottom: 16, color: '#cf1322', padding: '10px 12px', background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: '6px' }}>
-                 <WarningOutlined /> <Text strong type="danger">Lưu ý:</Text> Bạn đang yêu cầu dịch vụ gấp (dưới 2 tiếng). Hệ thống sẽ tự động cộng thêm <Text strong>{urgentFee.toLocaleString()}đ phụ phí</Text> để điều phối thợ ưu tiên cho bạn.
-               </div>
-             </Col>
+            <div style={{ marginBottom: 16, color: '#cf1322', padding: '10px 12px', background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: '6px' }}>
+              <WarningOutlined /> <Text strong type="danger">Lưu ý:</Text> Bạn đang yêu cầu dịch vụ gấp (dưới 2 tiếng). Hệ thống sẽ tự động cộng thêm <Text strong>{urgentFee.toLocaleString()}đ phụ phí</Text> cho ca làm việc đầu tiên để điều phối nhân viên nhanh nhất.
+            </div>
           )}
         </Row>
       )}
     </>
   );
 
-  // --- BƯỚC 3: ĐỊA CHỈ & THANH TOÁN ---
+
+  // Khai báo biến kiểm tra: Chỉ ca lẻ HOẶC hàng tuần linh hoạt mới được chọn nhân viên
+  const canSelectStaff = bookingData.bookingFrequency === 'one-time' || (bookingData.bookingFrequency === 'periodic' && bookingData.cycleType === 'continuous-weekly');
+
   const Step3 = (
     <Row gutter={24}>
       <Col span={14}>
@@ -341,6 +346,26 @@ const Booking = () => {
 
         <Divider />
 
+        {/* --- TÙY CHỌN NHÂN VIÊN ĐƯỢC CHUYỂN SANG ĐÂY --- */}
+        {canSelectStaff && (
+          <>
+            <Form.Item name="staffSelection" label={<span className="custom-label-wrapper"><UserOutlined /> <Text strong>Tùy chọn nhân viên</Text></span>}>
+              <Radio.Group className="full-width">
+                <Space direction="vertical" className="full-width">
+                  <Radio value="auto">
+                    <Text strong>Hệ thống tự điều phối</Text> (Miễn phí) - <Text type="secondary">Nhanh chóng nhất</Text>
+                  </Radio>
+                  <Radio value="favorite">
+                    <Text strong>Tự chọn nhân viên (Yêu thích / Mới)</Text> 
+                    <span style={{ color: '#cf1322', marginLeft: 8 }}>+30.000đ / ca</span>
+                  </Radio>
+                </Space>
+              </Radio.Group>
+            </Form.Item>
+            <Divider />
+          </>
+        )}
+
         <Form.Item name="paymentMethod" label={<span className="custom-label-wrapper"><DollarCircleOutlined /> <Text strong>Thanh toán</Text></span>}>
           <Radio.Group>
             <Space direction="vertical">
@@ -352,7 +377,7 @@ const Booking = () => {
 
         <Divider />
 
-        <Form.Item name="notes" label={<span className="custom-label-wrapper"><EditOutlined /> <Text strong>Ghi chú cho thợ</Text></span>}>
+        <Form.Item name="notes" label={<span className="custom-label-wrapper"><EditOutlined /> <Text strong>Ghi chú cho nhân viên</Text></span>}>
           <TextArea rows={3} placeholder="Ví dụ: Nhà có chó dữ, cổng màu xanh, bấm chuông giúp..." />
         </Form.Item>
       </Col>
@@ -360,10 +385,21 @@ const Booking = () => {
       <Col span={10}>
         <div className="order-summary-box">
           <Title level={4}>Tóm tắt dịch vụ</Title>
+          
           <div className="summary-row">
-            <Text>Số buổi làm:</Text>
-            <Text strong>{estimatedSessions} buổi</Text>
+            {bookingData.cycleType === 'continuous-weekly' ? (
+              <>
+                <Text>Hình thức:</Text>
+                <Text strong style={{ color: '#1677ff' }}>Hàng tuần (Thanh toán từng buổi)</Text>
+              </>
+            ) : (
+              <>
+                <Text>Số buổi làm:</Text>
+                <Text strong>{estimatedSessions} buổi</Text>
+              </>
+            )}
           </div>
+
           <div className="summary-row">
             <Text>Đơn giá:</Text>
             <Text>{basePrice.toLocaleString()} đ/buổi</Text>
@@ -376,15 +412,14 @@ const Booking = () => {
             </div>
           )}
 
-          {/* HIỂN THỊ PHÍ CHỌN THỢ */}
           {staffFee > 0 && (
             <div className="summary-row">
-              <Text type="warning">Phí chọn thợ:</Text>
+              <Text type="warning">Phí chọn nhân viên:</Text>
               <Text type="warning" strong>+ {staffFee.toLocaleString()} đ</Text>
             </div>
           )}
 
-          {bookingData.bookingFrequency === 'periodic' && (
+          {(bookingData.bookingFrequency === 'periodic' && bookingData.cycleType !== 'continuous-weekly') && (
             <div className="summary-row">
               <Text>Ưu đãi định kỳ (10%):</Text>
               <Text className="discount-text">- {periodicDiscount.toLocaleString()} đ</Text>
@@ -452,7 +487,7 @@ const Booking = () => {
               <Result 
                 status="success" 
                 title="Đặt lịch thành công!" 
-                subTitle="Hệ thống đã ghi nhận yêu cầu của bạn. Chúng tôi sẽ điều phối thợ và thông báo lại trong thời gian sớm nhất."
+                subTitle="Hệ thống đã ghi nhận yêu cầu của bạn. Chúng tôi sẽ điều phối nhân viên và thông báo lại trong thời gian sớm nhất."
                 extra={[
                   <Button type="primary" key="history" size="large" onClick={() => window.location.href='/history'}>
                     Quản lý lịch đặt

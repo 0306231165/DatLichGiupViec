@@ -1,171 +1,116 @@
-/* Bao bọc toàn bộ trang Booking để tạo background xám nhạt làm nổi bật Card */
-.booking-page-container {
-  padding: 40px 20px;
-  background-color: #f0f2f5; /* Màu nền xám nhẹ chuẩn Ant Design */
-  min-height: calc(100vh - 64px - 200px); /* Trừ hao Header và Footer */
-  display: flex;
-  justify-content: center;
+/* --- Tông màu chủ đạo Xanh Dương --- */
+:root {
+  --primary-color: #1677ff;
+  --bg-light-blue: #f0f7ff;
 }
 
-/* Card trắng bo góc chứa toàn bộ nội dung */
+.booking-page-container {
+  padding: 40px 20px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
 .booking-card {
-  width: 100%;
-  max-width: 800px; /* Khống chế độ rộng cho form đỡ bị bè ra quá to */
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  max-width: 1000px;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .booking-page-title {
   text-align: center;
-  margin-bottom: 8px !important;
-  color: #1890ff !important;
+  margin-bottom: 40px !important;
+  color: #1a1a1a;
 }
 
-.booking-page-subtitle {
-  display: block;
-  text-align: center;
-  font-size: 16px;
-  margin-bottom: 24px;
-}
-
-/* Thanh Steps */
+/* Tùy chỉnh Steps */
 .booking-steps {
   margin-bottom: 40px;
-  margin-top: 20px;
+  padding: 0 20px;
 }
 
-/* Khung chứa nội dung form từng bước */
 .steps-content {
-  min-height: 250px;
-  background-color: #fafafa;
-  border: 1px dashed #e9e9e9;
-  border-radius: 8px;
-  padding: 32px;
-}
-
-.step-content-box {
-  max-width: 600px;
-  margin: 0 auto; /* Căn giữa form bên trong box */
-}
-
-.step-content-box h4 {
-  margin-bottom: 24px;
-  color: #262626;
-  text-align: center;
-}
-
-.steps-content .ant-form-item-label > label {
-  font-weight: 500;
-}
-
-/* Khu vực nút bấm Next/Prev */
-.steps-action {
-  margin-top: 32px;
-  display: flex;
-  justify-content: flex-end; /* Đẩy nút sang bên phải */
-}
-
-.btn-next-step {
-  background-color: #1890ff;
-  box-shadow: 0 4px 10px rgba(24, 144, 255, 0.3);
-}
-
-.btn-finish-step {
-  background-color: #52c41a; /* Nút hoàn tất màu xanh lá cho nổi */
-  border-color: #52c41a;
-  box-shadow: 0 4px 10px rgba(82, 196, 26, 0.3);
-}
-
-.btn-finish-step:hover {
-  background-color: #73d13d !important;
-  border-color: #73d13d !important;
-}
-
-/* Responsive: Ẩn bớt chữ trên thanh Steps khi ở màn hình điện thoại */
-@media (max-width: 576px) {
-  .steps-content {
-    padding: 20px 16px;
-  }
-}
-
-.booking-section-custom {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
+  min-height: 350px;
+  padding: 24px;
+  background: #ffffff;
   border: 1px solid #f0f0f0;
-  margin-top: 10px;
+  border-radius: 8px;
 }
 
-.mt-2 {
-  margin-top: 10px;
+/* Form Styling */
+.custom-label-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  margin-bottom: 4px;
 }
 
-/* Hiệu ứng màu đỏ cho phí bổ sung */
-.ant-typography-danger {
-  font-weight: 500;
-  font-style: italic;
+.custom-label-wrapper .anticon {
+  color: var(--primary-color);
 }
 
 .full-width {
   width: 100%;
 }
 
-.section-label-container {
-  margin-bottom: 8px;
-}
-
-.required-star {
-  color: #ff4d4f;
-  margin-right: 4px;
-  font-size: 14px;
-  font-family: SimSun, sans-serif;
-}
-
-.text-free {
-  color: #52c41a;
-}
-
-.alert-info-mt {
-  margin-top: 10px;
-}
-
-/* --- UX cụm nút ở màn hình Đặt thành công --- */
-.success-action-group {
+/* Alert Tĩnh cho định kỳ */
+.static-alert-info {
+  background-color: var(--bg-light-blue);
+  border: 1px solid #adc6ff;
+  padding: 16px;
+  border-radius: 8px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 24px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
-.success-btn {
-  min-width: 180px;
-  border-radius: 6px;
+.static-alert-info .anticon {
+  color: var(--primary-color);
+  font-size: 20px;
+  margin-top: 3px;
 }
 
-/* Khoảng cách cho nút Quay Lại */
+/* Order Summary */
+.order-summary-box {
+  background-color: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  position: sticky;
+  top: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.summary-row.total {
+  border-top: 2px dashed #e8e8e8;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.total-price {
+  color: var(--primary-color);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.discount-text {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.promo-text {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
 .btn-back {
   margin-right: 12px;
 }
 
-/* --- Căn giữa icon và text của Label --- */
-.custom-label-wrapper {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px; /* Khoảng cách giữa icon và chữ */
-}
-
-.custom-label-wrapper .anticon {
-  font-size: 16px;
-  color: #595959; 
-}
-
-/* Ép dấu sao (*) của Ant Design nằm giữa trục Y so với Icon và Text */
-.ant-form-item-label > label {
-  align-items: center !important;
-}
-
-.ant-form-item-label > label::before {
-  line-height: unset !important;
-  margin-top: 2px; /* Tinh chỉnh độ cao quang học để cân bằng hoàn hảo */
-}
+.mb-4 { margin-bottom: 24px; }

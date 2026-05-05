@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { Steps, Button, Form, Input, Select, DatePicker, TimePicker, Card, Typography, Row, Col, Divider, Result, Radio, Space, Alert } from 'antd';
+import { Steps, Button, Form, Input, Select, DatePicker, TimePicker, Card, Typography, Row, Col, Divider, Result, Radio, Space, Tag } from 'antd';
 import { 
   ToolOutlined, 
   CalendarOutlined, 
   EnvironmentOutlined, 
   CheckCircleOutlined,
-  UserOutlined,
   DollarCircleOutlined,
   AppstoreOutlined,
   HomeOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  SyncOutlined,
+  InfoCircleOutlined,
+  EditOutlined,
+  CheckOutlined,
+  WarningOutlined,
+  UserOutlined // Đã thêm icon User
 } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import './../../css/customer/Booking.css';
 
 const { Title, Text } = Typography;
@@ -21,274 +27,458 @@ const Booking = () => {
   const [current, setCurrent] = useState(0);
   const [form] = Form.useForm();
   
-  const defaultValues = {
-    addressType: 'saved',
-    staffAssignmentType: 'auto',
-    paymentMethod: 'cash'
-  };
+  const [promoCode, setPromoCode] = useState('');
+  const [isPromoApplied, setIsPromoApplied] = useState(false);
 
-  const [bookingData, setBookingData] = useState(defaultValues);
+  const [bookingData, setBookingData] = useState({
+    bookingFrequency: 'one-time',
+    cycleType: 'single-weekly',
+    addressType: 'saved',
+    paymentMethod: 'cash',
+    duration: '1',
+    weekDays: [],
+    staffSelection: 'auto' // Mặc định là hệ thống tự xếp
+  });
+
+  // --- LOGIC TÍNH TOÁN & PHỤ PHÍ KHẨN CẤP ---
+  const basePrice = 150000;
+  let estimatedSessions = 1;
+
+  if (bookingData.bookingFrequency === 'periodic') {
+    const months = parseInt(bookingData.duration) || 1;
+    if (bookingData.cycleType === 'multi-weekly') {
+      const daysPerWeek = bookingData.weekDays && bookingData.weekDays.length > 0 ? bookingData.weekDays.length : 1;
+      estimatedSessions = (months * 4) * daysPerWeek;
+    } else {
+      estimatedSessions = months * 4;
+    }
+  }
+
+  // Bắt logic Khẩn cấp (Từ 30 phút đến dưới 2 tiếng)
+  let isUrgentBooking = false;
+  const dateFieldToCheck = bookingData.bookingFrequency === 'periodic' ? bookingData.startDate : bookingData.date;
   
-  const addressType = Form.useWatch('addressType', form);
-  const staffAssignmentType = Form.useWatch('staffAssignmentType', form);
+  if (dateFieldToCheck && bookingData.time) {
+    const now = dayjs();
+    if (dateFieldToCheck.isSame(now, 'day')) {
+      const selectedDateTime = dateFieldToCheck.hour(bookingData.time.hour()).minute(bookingData.time.minute());
+      // Nếu thời gian đặt cách hiện tại dưới 2 tiếng và lớn hơn 29 phút
+      if (selectedDateTime.isBefore(now.add(2, 'hour')) && selectedDateTime.isAfter(now.add(29, 'minute'))) {
+        isUrgentBooking = true;
+      }
+    }
+  }
+
+  // Bắt logic tính phí Chọn Thợ
+  let staffFee = 0;
+  if (bookingData.staffSelection === 'favorite') {
+    // Đặt lẻ: 30k/ca. Đặt định kỳ: 50k phí sắp xếp thợ cố định cho toàn hợp đồng
+    staffFee = bookingData.bookingFrequency === 'periodic' ? 50000 : 30000;
+  }
+
+  const subTotal = basePrice * estimatedSessions;
+  const periodicDiscount = bookingData.bookingFrequency === 'periodic' ? subTotal * 0.1 : 0;
+  const voucherDiscount = isPromoApplied ? 50000 : 0;
+  const urgentFee = isUrgentBooking ? 80000 : 0; // Đã chốt 80.000đ
+  
+  // Tổng tiền = Tiền dịch vụ + Phí đặt gấp + Phí chọn thợ - Giảm giá định kỳ - Voucher
+  const finalTotal = subTotal + urgentFee + staffFee - periodicDiscount - voucherDiscount;
+
+  const handleValuesChange = (changedValues, allValues) => {
+    if (changedValues.cycleType || changedValues.weekDays) {
+      if (allValues.cycleType === 'multi-weekly') {
+        form.setFieldsValue({ startDate: null });
+        allValues.startDate = null;
+      }
+    }
+    setBookingData(prev => ({ ...prev, ...allValues }));
+  };
 
   const next = async () => {
     try {
-      const values = await form.validateFields();
-      setBookingData({ ...bookingData, ...values });
+      await form.validateFields();
       setCurrent(current + 1);
-    } catch (errorInfo) {
-      console.log('Validate failed:', errorInfo);
+    } catch (error) {
+      console.log('Validate failed:', error);
     }
   };
-
-  const prev = () => setCurrent(current - 1);
 
   const onFinish = async () => {
     try {
-      const values = await form.validateFields(); 
-      const finalData = { ...bookingData, ...values };
-      console.log('Dữ liệu đặt lịch cuối cùng:', finalData);
-      
+      await form.validateFields();
+      console.log('Dữ liệu gửi đi:', { ...bookingData, finalTotal, isUrgentBooking, urgentFee, staffFee });
       setCurrent(current + 1);
-    } catch (errorInfo) {
-      console.log('Validate failed:', errorInfo);
+    } catch (error) {
+      console.log('Validate failed:', error);
     }
   };
 
-  const handleResetBooking = () => {
-    form.resetFields();
-    form.setFieldsValue(defaultValues);
-    setBookingData(defaultValues);
-    setCurrent(0);
+  const handleApplyPromo = () => {
+    if (promoCode.toUpperCase() === 'GIAM50K') {
+      setIsPromoApplied(true);
+    } else {
+      alert('Mã không hợp lệ! Thử mã: GIAM50K');
+    }
   };
 
-  // --- BƯỚC 1: DỊCH VỤ (Đã đồng bộ Label) ---
-  const Step1Service = (
-    <div className="step-content-box">
-      <Title level={4}>Chọn loại dịch vụ</Title>
-      <Form layout="vertical" form={form} initialValues={bookingData}>
-        <Form.Item 
-          name="serviceType" 
-          label={
-            <span className="custom-label-wrapper">
-              <AppstoreOutlined /> <Text strong>Dịch vụ bạn cần</Text>
-            </span>
-          } 
-          rules={[{ required: true, message: 'Vui lòng chọn dịch vụ!' }]}
-        >
-          <Select size="large" placeholder="-- Chọn dịch vụ --">
-            <Option value="cleaning">Dọn dẹp nhà cửa</Option>
-            <Option value="cooking">Nấu ăn tại nhà</Option>
-            <Option value="repair">Sửa chữa điện nước</Option>
-          </Select>
-        </Form.Item>
+  // --- HÀM KHÓA NGÀY ---
+  const disabledDate = (current) => {
+    if (current && current < dayjs().startOf('day')) {
+      return true;
+    }
+    if (bookingData.cycleType === 'multi-weekly' && bookingData.weekDays && bookingData.weekDays.length > 0) {
+      const currentDayOfWeek = current.day() === 0 ? 8 : current.day() + 1;
+      return !bookingData.weekDays.includes(currentDayOfWeek.toString());
+    }
+    return false;
+  };
 
-        <Form.Item 
-          name="homeSize" 
-          label={
-            <span className="custom-label-wrapper">
-              <HomeOutlined /> <Text strong>Diện tích / Quy mô</Text>
-            </span>
-          } 
-          rules={[{ required: true, message: 'Vui lòng chọn quy mô!' }]}
-        >
-          <Select size="large" placeholder="-- Chọn diện tích nhà --">
-            <Option value="small">Dưới 50m2</Option>
-            <Option value="medium">50m2 - 100m2</Option>
-            <Option value="large">Trên 100m2</Option>
-          </Select>
-        </Form.Item>
-      </Form>
-    </div>
-  );
+  const getDayName = (dateObj) => {
+    if (!dateObj) return '';
+    const day = dateObj.day();
+    return day === 0 ? 'Chủ nhật' : `Thứ ${day + 1}`;
+  };
 
-  // --- BƯỚC 2: THỜI GIAN (Đã đồng bộ Label) ---
-  const Step2Time = (
-    <div className="step-content-box">
-      <Title level={4}>Thời gian làm việc</Title>
-      <Form layout="vertical" form={form} initialValues={bookingData}>
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item 
-              name="date" 
-              label={
-                <span className="custom-label-wrapper">
-                  <CalendarOutlined /> <Text strong>Ngày thực hiện</Text>
-                </span>
-              } 
-              rules={[{ required: true, message: 'Chọn ngày!' }]}
-            >
-              <DatePicker size="large" className="full-width" format="DD/MM/YYYY" />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item 
-              name="time" 
-              label={
-                <span className="custom-label-wrapper">
-                  <ClockCircleOutlined /> <Text strong>Giờ bắt đầu</Text>
-                </span>
-              } 
-              rules={[{ required: true, message: 'Chọn giờ!' }]}
-            >
-              <TimePicker size="large" className="full-width" format="HH:mm" />
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
-    </div>
-  );
+  // --- HÀM KIỂM TRA GIỜ (Chặn dưới 30 phút) ---
+  const validateTimeRule = ({ getFieldValue }) => ({
+    validator(_, value) {
+      if (!value) return Promise.resolve();
+      
+      const dateField = bookingData.bookingFrequency === 'periodic' ? 'startDate' : 'date';
+      const selectedDate = getFieldValue(dateField);
+      
+      if (!selectedDate) return Promise.resolve();
 
-  // --- BƯỚC 3: THÔNG TIN (Đã căn chỉnh lại) ---
-  const Step3Details = (
-    <div className="step-content-box">
-      <Title level={4}>Địa chỉ & Thanh toán</Title>
-      <Form layout="vertical" form={form} initialValues={bookingData}>
-        
-        <div className="booking-section-custom">
-          <Form.Item 
-            name="addressType" 
-            label={
-              <span className="custom-label-wrapper">
-                <EnvironmentOutlined /> <Text strong>Địa chỉ thực hiện</Text>
+      const now = dayjs();
+      if (selectedDate.isSame(now, 'day')) {
+        const selectedDateTime = selectedDate.hour(value.hour()).minute(value.minute());
+        // Chỉ chặn cứng nếu đặt trước DƯỚI 30 PHÚT
+        if (selectedDateTime.isBefore(now.add(30, 'minute'))) {
+          return Promise.reject(new Error('Vui lòng đặt trước ít nhất 30 phút để thợ kịp di chuyển!'));
+        }
+      }
+      return Promise.resolve();
+    }
+  });
+
+  // --- BƯỚC 1: DỊCH VỤ ---
+  const Step1 = (
+    <>
+      <Title level={4} className="mb-4">Thông tin dịch vụ</Title>
+      <Form.Item name="bookingFrequency" label={<span className="custom-label-wrapper"><SyncOutlined /> <Text strong>Gói dịch vụ</Text></span>}>
+        <Radio.Group className="full-width">
+          <Space direction="vertical" className="full-width">
+            <Radio value="one-time">Dùng 1 lần linh hoạt (Đặt buổi nào tính buổi đó)</Radio>
+            <Radio value="periodic">Đặt định kỳ (Lặp lại dài hạn) - <span className="promo-text">Giảm 10%</span></Radio>
+          </Space>
+        </Radio.Group>
+      </Form.Item>
+
+      <Divider />
+
+      <Form.Item name="serviceType" label={<span className="custom-label-wrapper"><AppstoreOutlined /> <Text strong>Bạn cần dịch vụ gì?</Text></span>} rules={[{ required: true, message: 'Vui lòng chọn dịch vụ!' }]}>
+        <Select size="large" placeholder="Chọn dịch vụ">
+          <Option value="cleaning">Dọn dẹp nhà cửa</Option>
+          <Option value="cooking">Nấu ăn tại gia</Option>
+          <Option value="ac">Vệ sinh máy lạnh</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item name="homeSize" label={<span className="custom-label-wrapper"><HomeOutlined /> <Text strong>Diện tích nhà</Text></span>} rules={[{ required: true, message: 'Vui lòng chọn diện tích!' }]}>
+        <Select size="large" placeholder="Chọn diện tích">
+          <Option value="small">Dưới 50m2</Option>
+          <Option value="medium">50m2 - 100m2</Option>
+          <Option value="large">Trên 100m2</Option>
+        </Select>
+      </Form.Item>
+
+      <Divider />
+
+      {/* CHỨC NĂNG CHỌN THỢ MỚI THÊM */}
+      <Form.Item name="staffSelection" label={<span className="custom-label-wrapper"><UserOutlined /> <Text strong>Tùy chọn nhân viên</Text></span>}>
+        <Radio.Group className="full-width">
+          <Space direction="vertical" className="full-width">
+            <Radio value="auto">
+              <Text strong>Hệ thống tự điều phối</Text> (Miễn phí) - <Text type="secondary">Nhanh chóng nhất</Text>
+            </Radio>
+            <Radio value="favorite">
+              <Text strong>{bookingData.bookingFrequency === 'periodic' ? 'Ưu tiên thợ yêu thích / Thợ quen' : 'Chọn thợ yêu thích / Thợ quen'}</Text> 
+              <span style={{ color: '#cf1322', marginLeft: 8 }}>
+                {bookingData.bookingFrequency === 'periodic' ? '+50.000đ / toàn bộ hợp đồng' : '+30.000đ / ca'}
               </span>
-            }
-            required
-            className="mb-2"
-          >
-            <Radio.Group>
-              <Radio value="saved">Sử dụng địa chỉ đã lưu</Radio>
-              <Radio value="manual">Nhập địa chỉ mới</Radio>
+            </Radio>
+          </Space>
+        </Radio.Group>
+      </Form.Item>
+    </>
+  );
+
+  // --- BƯỚC 2: THỜI GIAN ---
+  const Step2 = (
+    <>
+      <Title level={4} className="mb-4">Thời gian làm việc</Title>
+      
+      {bookingData.bookingFrequency === 'periodic' ? (
+        <div className="periodic-options-container">
+          <Form.Item name="cycleType" label={<span className="custom-label-wrapper"><SyncOutlined /> <Text strong>Tần suất lặp lại</Text></span>}>
+            <Radio.Group optionType="button" buttonStyle="solid">
+              <Radio.Button value="single-weekly">1 buổi / Tuần</Radio.Button>
+              <Radio.Button value="multi-weekly">Nhiều buổi / Tuần</Radio.Button>
             </Radio.Group>
           </Form.Item>
 
-          {addressType === 'saved' ? (
-            <Form.Item name="savedAddressId" rules={[{ required: true, message: 'Vui lòng chọn địa chỉ!' }]}>
-              <Select size="large" placeholder="Chọn từ địa chỉ của bạn">
-                <Option value="1">123 Nguyễn Văn Linh, Quận 7, TP.HCM</Option>
-                <Option value="2">456 Lê Lợi, Quận 1, TP.HCM</Option>
+          {bookingData.cycleType === 'multi-weekly' && (
+            <Form.Item name="weekDays" label={<span className="custom-label-wrapper"><CheckOutlined /> <Text strong>Chọn các ngày làm trong tuần</Text></span>} rules={[{ required: true, message: 'Vui lòng chọn ít nhất 1 ngày!' }]}>
+              <Select mode="multiple" size="large" placeholder="Ví dụ: Thứ 2, Thứ 4, Thứ 6">
+                <Option value="2">Thứ 2</Option><Option value="3">Thứ 3</Option><Option value="4">Thứ 4</Option>
+                <Option value="5">Thứ 5</Option><Option value="6">Thứ 6</Option><Option value="7">Thứ 7</Option>
+                <Option value="8">Chủ nhật</Option>
               </Select>
             </Form.Item>
-          ) : (
-            <Form.Item name="manualAddress" rules={[
-              { required: true, message: 'Vui lòng nhập địa chỉ cụ thể!' },
-              { whitespace: true, message: 'Địa chỉ không được để trống!' }
-            ]}>
-              <Input size="large" placeholder="Nhập số nhà, tên đường, quận..." />
-            </Form.Item>
           )}
-        </div>
 
-        <Divider className="my-3" />
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="startDate" label={<span className="custom-label-wrapper"><CalendarOutlined /> <Text strong>Ngày bắt đầu</Text></span>} rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}>
+                <DatePicker 
+                  size="large" 
+                  className="full-width" 
+                  format="DD/MM/YYYY" 
+                  placeholder={bookingData.cycleType === 'multi-weekly' && (!bookingData.weekDays || bookingData.weekDays.length === 0) ? "Vui lòng chọn Thứ trước" : "Chọn ngày"} 
+                  disabledDate={disabledDate} 
+                  disabled={bookingData.cycleType === 'multi-weekly' && (!bookingData.weekDays || bookingData.weekDays.length === 0)}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item 
+                name="time" 
+                dependencies={['startDate']} 
+                label={<span className="custom-label-wrapper"><ClockCircleOutlined /> <Text strong>Giờ làm (Cố định)</Text></span>} 
+                rules={[{ required: true, message: 'Vui lòng chọn giờ làm!' }, validateTimeRule]}
+              >
+                <TimePicker size="large" className="full-width" format="HH:mm" placeholder="Giờ tới làm" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <div className="booking-section-custom">
-          <Form.Item 
-            name="staffAssignmentType" 
-            label={
-              <span className="custom-label-wrapper">
-                <UserOutlined /> <Text strong>Hình thức nhận việc</Text>
-              </span>
-            }
-            rules={[{ required: true, message: 'Vui lòng chọn hình thức nhận việc!' }]}
-          >
-            <Radio.Group>
-              <Space direction="vertical">
-                <Radio value="auto">
-                  Phát yêu cầu nhanh (Thợ nào nhận việc trước sẽ làm) - <Text className="text-free">Miễn phí</Text>
-                </Radio>
-                <Radio value="manual">
-                  Đăng yêu cầu để thợ ứng tuyển, tôi sẽ tự chọn thợ - <Text type="danger">Phí dịch vụ +50.000đ</Text>
-                </Radio>
-              </Space>
-            </Radio.Group>
-          </Form.Item>
-
-          {staffAssignmentType === 'manual' && (
-            <Alert
-              message="Lưu ý hình thức ứng tuyển"
-              description="Sau khi hoàn tất đặt lịch, yêu cầu của bạn sẽ được đăng lên hệ thống. Khi có thợ ứng tuyển, bạn có thể vào 'Lịch sử đặt dịch vụ' để xem hồ sơ và tự tay chọn thợ."
-              type="info"
-              showIcon
-              className="alert-info-mt"
-            />
+          {/* CẢNH BÁO ĐẶT GẤP (Đã chỉnh số động) */}
+          {isUrgentBooking && (
+             <div style={{ marginBottom: 16, color: '#cf1322', padding: '10px 12px', background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: '6px' }}>
+               <WarningOutlined /> <Text strong type="danger">Lưu ý:</Text> Bạn đang yêu cầu dịch vụ gấp (dưới 2 tiếng). Hệ thống sẽ tự động cộng thêm <Text strong>{urgentFee.toLocaleString()}đ phụ phí</Text> cho ca làm việc đầu tiên để điều phối thợ nhanh nhất.
+             </div>
           )}
-        </div>
 
-        <Divider className="my-3" />
-
-        <div className="booking-section-custom">
-          <Form.Item 
-            name="paymentMethod" 
-            label={
-              <span className="custom-label-wrapper">
-                <DollarCircleOutlined /> <Text strong>Phương thức thanh toán</Text>
-              </span>
-            }
-            rules={[{ required: true, message: 'Vui lòng chọn phương thức thanh toán!' }]}
-          >
-            <Radio.Group>
-              <Space direction="vertical">
-                <Radio value="cash">Thanh toán tiền mặt sau khi hoàn thành</Radio>
-                <Radio value="transfer">Chuyển khoản ngân hàng / Ví điện tử (Momo, ZaloPay...)</Radio>
-              </Space>
-            </Radio.Group>
+          {bookingData.cycleType === 'single-weekly' && bookingData.startDate && (
+             <div style={{ marginBottom: 16, color: '#1677ff', fontStyle: 'italic', padding: '8px 12px', background: '#e6f4ff', borderRadius: '6px' }}>
+               <InfoCircleOutlined /> Lịch sẽ tự động lặp lại vào <b>{getDayName(bookingData.startDate)}</b> mỗi tuần.
+             </div>
+          )}
+          
+          <Form.Item name="duration" label={<span className="custom-label-wrapper"><CalendarOutlined /> <Text strong>Thời gian duy trì hợp đồng</Text></span>}>
+            <Select size="large">
+              <Option value="1">Duy trì trong 1 tháng (Khuyến nghị)</Option>
+              <Option value="3">Duy trì trong 3 tháng</Option>
+              <Option value="6">Duy trì trong 6 tháng</Option>
+            </Select>
           </Form.Item>
         </div>
-
-        <Divider className="my-3" />
-        
-        <Form.Item name="notes" label={<Text strong>Ghi chú thêm</Text>}>
-          <TextArea rows={4} placeholder="Ghi chú cho nhân viên (Ví dụ: Cổng nhà màu xanh, bấm chuông khi tới, nhà có chó dữ...)" />
-        </Form.Item>
-      </Form>
-    </div>
+      ) : (
+        <Row gutter={16}>
+          <Col span={12}>
+             <Form.Item name="date" label={<span className="custom-label-wrapper"><CalendarOutlined /> <Text strong>Ngày thực hiện</Text></span>} rules={[{ required: true, message: 'Vui lòng chọn ngày thực hiện!' }]}>
+                <DatePicker size="large" className="full-width" format="DD/MM/YYYY" disabledDate={(current) => current && current < dayjs().startOf('day')} />
+              </Form.Item>
+          </Col>
+          <Col span={12}>
+              <Form.Item 
+                name="time" 
+                dependencies={['date']} 
+                label={<span className="custom-label-wrapper"><ClockCircleOutlined /> <Text strong>Giờ bắt đầu</Text></span>} 
+                rules={[{ required: true, message: 'Vui lòng chọn giờ bắt đầu!' }, validateTimeRule]}
+              >
+                <TimePicker size="large" className="full-width" format="HH:mm" />
+              </Form.Item>
+          </Col>
+          
+          {/* CẢNH BÁO ĐẶT GẤP CHO ĐẶT LẺ (Đã chỉnh số động) */}
+          {isUrgentBooking && (
+             <Col span={24}>
+               <div style={{ marginBottom: 16, color: '#cf1322', padding: '10px 12px', background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: '6px' }}>
+                 <WarningOutlined /> <Text strong type="danger">Lưu ý:</Text> Bạn đang yêu cầu dịch vụ gấp (dưới 2 tiếng). Hệ thống sẽ tự động cộng thêm <Text strong>{urgentFee.toLocaleString()}đ phụ phí</Text> để điều phối thợ ưu tiên cho bạn.
+               </div>
+             </Col>
+          )}
+        </Row>
+      )}
+    </>
   );
 
-  const Step4Success = (
-    <Result
-      status="success"
-      title="Đặt lịch thành công!"
-      subTitle="Yêu cầu dịch vụ của bạn đã được ghi nhận. Vui lòng theo dõi trạng thái lịch đặt."
-      extra={
-        <div className="success-action-group">
-          <Button type="primary" size="large" key="history" className="success-btn">
-            Xem lịch sử đặt dịch vụ
-          </Button>
-          <Button size="large" key="book-new" onClick={handleResetBooking} className="success-btn">
-            Đặt lịch mới
-          </Button>
-          <Button size="large" key="home" onClick={() => window.location.href='/'} className="success-btn">
-            Trở về Trang chủ
-          </Button>
+  // --- BƯỚC 3: ĐỊA CHỈ & THANH TOÁN ---
+  const Step3 = (
+    <Row gutter={24}>
+      <Col span={14}>
+        <Title level={4} className="mb-4">Địa chỉ & Thanh toán</Title>
+        <Form.Item name="addressType" label={<span className="custom-label-wrapper"><EnvironmentOutlined /> <Text strong>Địa chỉ thực hiện</Text></span>}>
+          <Radio.Group>
+            <Radio value="saved">Địa chỉ đã lưu</Radio>
+            <Radio value="manual">Nhập địa chỉ mới</Radio>
+          </Radio.Group>
+        </Form.Item>
+
+        {bookingData.addressType === 'saved' ? (
+          <Form.Item name="savedAddressId" rules={[{ required: true, message: 'Vui lòng chọn địa chỉ đã lưu!' }]}>
+            <Select size="large" placeholder="Chọn địa chỉ">
+              <Option value="1">123 Nguyễn Văn Linh, Quận 7, TP.HCM</Option>
+              <Option value="2">456 Lê Lợi, Quận 1, TP.HCM</Option>
+            </Select>
+          </Form.Item>
+        ) : (
+          <Form.Item name="manualAddress" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ mới của bạn!' }]}>
+            <Input size="large" placeholder="Số nhà, tên đường, phường, quận..." />
+          </Form.Item>
+        )}
+
+        <Divider />
+
+        <Form.Item name="paymentMethod" label={<span className="custom-label-wrapper"><DollarCircleOutlined /> <Text strong>Thanh toán</Text></span>}>
+          <Radio.Group>
+            <Space direction="vertical">
+              <Radio value="cash">Tiền mặt (Sau khi hoàn thành)</Radio>
+              <Radio value="transfer">Chuyển khoản / Ví điện tử</Radio>
+            </Space>
+          </Radio.Group>
+        </Form.Item>
+
+        <Divider />
+
+        <Form.Item name="notes" label={<span className="custom-label-wrapper"><EditOutlined /> <Text strong>Ghi chú cho thợ</Text></span>}>
+          <TextArea rows={3} placeholder="Ví dụ: Nhà có chó dữ, cổng màu xanh, bấm chuông giúp..." />
+        </Form.Item>
+      </Col>
+
+      <Col span={10}>
+        <div className="order-summary-box">
+          <Title level={4}>Tóm tắt dịch vụ</Title>
+          <div className="summary-row">
+            <Text>Số buổi làm:</Text>
+            <Text strong>{estimatedSessions} buổi</Text>
+          </div>
+          <div className="summary-row">
+            <Text>Đơn giá:</Text>
+            <Text>{basePrice.toLocaleString()} đ/buổi</Text>
+          </div>
+          
+          {isUrgentBooking && (
+            <div className="summary-row">
+              <Text type="danger">Phụ phí đặt gấp:</Text>
+              <Text type="danger" strong>+ {urgentFee.toLocaleString()} đ</Text>
+            </div>
+          )}
+
+          {/* HIỂN THỊ PHÍ CHỌN THỢ */}
+          {staffFee > 0 && (
+            <div className="summary-row">
+              <Text type="warning">Phí chọn thợ:</Text>
+              <Text type="warning" strong>+ {staffFee.toLocaleString()} đ</Text>
+            </div>
+          )}
+
+          {bookingData.bookingFrequency === 'periodic' && (
+            <div className="summary-row">
+              <Text>Ưu đãi định kỳ (10%):</Text>
+              <Text className="discount-text">- {periodicDiscount.toLocaleString()} đ</Text>
+            </div>
+          )}
+
+          {isPromoApplied && (
+            <div className="summary-row">
+              <Text>Voucher giảm giá:</Text>
+              <Text className="discount-text">- 50.000 đ</Text>
+            </div>
+          )}
+
+          <div className="summary-row total">
+            <Text strong>TỔNG CỘNG:</Text>
+            <div className="total-price">{finalTotal.toLocaleString()} đ</div>
+          </div>
+
+          <Divider />
+          <Space.Compact style={{ width: '100%' }}>
+            <Input 
+              placeholder="Mã giảm giá" 
+              value={promoCode} 
+              onChange={e => setPromoCode(e.target.value)}
+              disabled={isPromoApplied}
+            />
+            <Button type="primary" onClick={handleApplyPromo} disabled={isPromoApplied}>Áp dụng</Button>
+          </Space.Compact>
+          {isPromoApplied && <Tag color="green" className="mt-2" closable onClose={() => setIsPromoApplied(false)}>Đã áp dụng Voucher</Tag>}
         </div>
-      }
-    />
+      </Col>
+    </Row>
   );
 
   const steps = [
-    { title: 'Dịch vụ', icon: <ToolOutlined />, content: Step1Service },
-    { title: 'Thời gian', icon: <CalendarOutlined />, content: Step2Time },
-    { title: 'Thông tin', icon: <EnvironmentOutlined />, content: Step3Details },
-    { title: 'Hoàn tất', icon: <CheckCircleOutlined />, content: Step4Success },
+    { title: 'Dịch vụ', icon: <ToolOutlined />, content: Step1 },
+    { title: 'Thời gian', icon: <CalendarOutlined />, content: Step2 },
+    { title: 'Thông tin', icon: <EnvironmentOutlined />, content: Step3 },
+    { title: 'Hoàn tất', icon: <CheckCircleOutlined />, content: null },
   ];
 
   return (
     <div className="booking-page-container">
       <Card className="booking-card">
         <Title level={2} className="booking-page-title">Đặt lịch dịch vụ</Title>
-        <Steps current={current} items={steps.map(s => ({ title: s.title, icon: s.icon }))} className="booking-steps" />
-        <div className="steps-content">{steps[current].content}</div>
         
-        {current < steps.length - 1 && (
-          <div className="steps-action">
-            {current > 0 && <Button onClick={prev} size="large" className="btn-back">Quay lại</Button>}
-            
-            <Button type="primary" size="large" onClick={current === steps.length - 2 ? onFinish : next}>
-              {current === steps.length - 2 ? 'Xác nhận đặt lịch' : 'Tiếp tục'}
-            </Button>
+        <Steps 
+          current={current} 
+          items={steps.map(s => ({ title: s.title, icon: s.icon }))} 
+          className="booking-steps" 
+        />
+
+        <Form 
+          form={form} 
+          layout="vertical" 
+          preserve={true}
+          initialValues={bookingData}
+          onValuesChange={handleValuesChange}
+        >
+          <div className="steps-content">
+            {current === 0 && Step1}
+            {current === 1 && Step2}
+            {current === 2 && Step3}
+            {current === 3 && (
+              <Result 
+                status="success" 
+                title="Đặt lịch thành công!" 
+                subTitle="Hệ thống đã ghi nhận yêu cầu của bạn. Chúng tôi sẽ điều phối thợ và thông báo lại trong thời gian sớm nhất."
+                extra={[
+                  <Button type="primary" key="history" size="large" onClick={() => window.location.href='/history'}>
+                    Quản lý lịch đặt
+                  </Button>,
+                  <Button key="book_more" size="large" onClick={() => window.location.reload()}>
+                    Đặt thêm dịch vụ
+                  </Button>,
+                  <Button key="home" size="large" onClick={() => window.location.href='/'}>
+                    Về trang chủ
+                  </Button>
+                ]}
+              />
+            )}
           </div>
-        )}
+
+          {current < 3 && (
+            <div className="steps-action" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+              {current > 0 && (
+                <Button onClick={() => setCurrent(current - 1)} className="btn-back" size="large">Quay lại</Button>
+              )}
+              <Button type="primary" size="large" onClick={current === 2 ? onFinish : next}>
+                {current === 2 ? 'Xác nhận đặt lịch' : 'Tiếp tục'}
+              </Button>
+            </div>
+          )}
+        </Form>
       </Card>
     </div>
   );

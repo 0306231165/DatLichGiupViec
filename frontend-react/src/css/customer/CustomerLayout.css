@@ -35,11 +35,6 @@
   line-height: 64px; /* Khớp với chiều cao Header antd */
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-}
-
 .btn-login {
   margin-right: 10px;
 }
@@ -96,12 +91,12 @@
 
 /* Thanh tìm kiếm */
 .header-search-bar {
-  width: 260px; /* Độ rộng vừa phải */
+  width: 280px; /* Độ rộng vừa phải */
   transition: all 0.3s;
 }
 
 .header-search-bar:hover, .header-search-bar:focus {
-  width: 260px; /* Giãn nhẹ khi tương tác */
+  width: 280px; /* Giãn nhẹ khi tương tác */
 }
 
 /* Nút Đăng nhập kiểu mới (Nổi bật nhưng không lấn át nút Booking) */
@@ -128,10 +123,24 @@
 
 /* Icon mũi tên nhỏ cho menu Dịch vụ */
 .dropdown-arrow-small {
-  font-size: 10px !important; /* Nhỏ gọn */
-  margin-left: 5px;
-  color: #8c8c8c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 10px !important;
+
+  margin-left: 6px;
   margin-top: 4px;
+
+  color: #a3a3a3;
+
+  transition: all 0.25s ease !important;
+}
+
+/* Hover menu -> arrow xoay */
+.ant-menu-submenu:hover .dropdown-arrow-small {
+  transform: rotate(180deg);
+  color: #1677ff;
 }
 
 /* Chỉnh menu dịch vụ để icon và chữ thẳng hàng */
@@ -140,4 +149,106 @@
   align-items: center;
 }
 
-/* Căn giữa menu text để không bị lệch khi thêm search bar */
+/* ================= ICONS ================= */
+.header-icons-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-icon {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.action-icon:hover {
+  background: #f5f7fa;
+}
+
+.icon-main {
+  font-size: 18px;
+  color: #8c8c8c;
+  transition: all 0.25s ease;
+}
+
+.action-icon:hover .icon-main {
+  color: #1677ff;
+  transform: translateY(-1px);
+}
+
+/* ================= USER ================= */
+.customer-user-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  height: 42px;
+  padding: 0 10px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.customer-user-box::after {
+  content: "";
+  position: absolute;
+  top: 0;      /* kéo lên trên */
+  left: 0;     /* kéo sang trái */
+  right: 0;    /* kéo sang phải */
+  bottom: -20px;   /* kéo xuống dưới nhiều hơn (vì dropdown ở dưới) */
+  z-index: -1;     /* nằm dưới nội dung */
+  pointer-events: auto;   /* quan trọng */
+  background-color: transparent;
+}
+
+
+/* Hover nhẹ đẹp */
+.customer-user-box:hover {
+  background: #f5f7fa;
+}
+
+/* Avatar */
+.customer-user-box .ant-avatar {
+  /* border: 1px solid #f0f0f0; */
+  border: 1px solid #d1d0d0;
+}
+
+/* User info */
+.customer-user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* User name */
+.customer-user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  line-height: 1;
+}
+
+/* Arrow */
+.customer-user-arrow {
+  font-size: 10px;
+  color: #a3a3a3;
+  transition: all 0.25s ease;
+}
+
+.customer-user-box:hover .customer-user-arrow {
+  transform: rotate(180deg);
+  color: #1677ff;
+}
+

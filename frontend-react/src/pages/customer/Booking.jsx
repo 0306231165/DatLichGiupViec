@@ -224,9 +224,9 @@ const Booking = () => {
         <div className="periodic-options-container">
           <Form.Item name="cycleType" label={<span className="custom-label-wrapper"><SyncOutlined /> <Text strong>Tần suất lặp lại</Text></span>}>
             <Radio.Group optionType="button" buttonStyle="solid">
-              <Radio.Button value="single-weekly">1 buổi / Tuần</Radio.Button>
-              <Radio.Button value="multi-weekly">Nhiều buổi / Tuần</Radio.Button>
-              <Radio.Button value="continuous-weekly">Hàng tuần (Linh hoạt)</Radio.Button>
+              <Radio.Button value="single-weekly">Gói tháng - 1 buổi / Tuần</Radio.Button>
+              <Radio.Button value="multi-weekly">Gói tháng - Nhiều buổi / Tuần</Radio.Button>
+              <Radio.Button value="continuous-weekly">Gói dài hạn (Lặp lại hàng tuần)</Radio.Button>
             </Radio.Group>
           </Form.Item>
 

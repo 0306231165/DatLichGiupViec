@@ -1,2 +1,4 @@
-#1890ff --> màu nhạt
-#1677ff --> màu đậm
+#1890ff --> xanh nước - màu nhạt
+#1677ff --> xanh nước - màu đậm
+
+#ff4d4f --> đỏ - đậm
